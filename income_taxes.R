@@ -84,8 +84,10 @@ hecs_threshold_data <- read_excel(here("taxes.xlsx")
 hecs.repayment <- function(income_hecs_mls
                            , hecs_threshold_data
                            , yr = year(Sys.Date()) # optional
+                           , hecs_debt = 0 ### assuumes no hecs debt by default
                            ) {
   
+  if (hecs_debt ==1){
   rate <- hecs_threshold_data %>%
     filter(year == yr
            , threshold <= income_hecs_mls) %>%
@@ -93,6 +95,9 @@ hecs.repayment <- function(income_hecs_mls
     max()
   
   hecs_payable <<- income_hecs_mls*rate
+  } else {
+    hecs_payable <<- 0
+  }
   return(hecs_payable)
   
 }

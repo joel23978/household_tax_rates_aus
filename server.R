@@ -64,6 +64,7 @@ function(input, output, session){
     x_income_partner_annual <- reactive(as.numeric(input$x_income_partner_annual))
     x_assets_personal <- reactive(as.numeric(input$x_assets_personal))
     private_health <- reactive(as.numeric(as.logical(input$private_health)))
+    hecs_debt <- reactive(as.numeric(as.logical(input$hecs_debt)))
     
     net_investment_loss <- reactive(as.numeric(input$net_investment_loss))
     rep_fringe_benefits <- reactive(as.numeric(input$rep_fringe_benefits))
@@ -79,7 +80,7 @@ function(input, output, session){
     income_hecs_mls <- reactive(income_taxable + net_investment_loss + rep_fringe_benefits + rep_super_contributions)
   
     income_tax_payable <- sapply(income_taxable, income.tax, tax_threshold_data, yr, resdent_status)
-    hecs_payable <- sapply(income_taxable, hecs.repayment, hecs_threshold_data, yr)
+    hecs_payable <- sapply(income_taxable, hecs.repayment, hecs_threshold_data, yr, hecs_debt())
     mls_payable <- sapply(income_taxable, medicare.levy.surcharge
                           , mls_threshold_data, yr, x_single(), private_health(), x_income_partner_annual())
 
