@@ -5,7 +5,7 @@ navbarPage(
     "Taxes",
     fluidPage(
       sidebarPanel(
-        h2("Inputs")
+        h2("Variables")
         , checkboxInput("hecs_debt"
                         , label = ("HECS-HELP Debt")
                         , FALSE
@@ -76,7 +76,7 @@ navbarPage(
         
         ## EMTR faced at each $1000 incrememnt
         , h2("Effective Marginal Tax Rate")
-        #, plotlyOutput("emtr_plot")
+        , plotlyOutput("emtr_plot")
         , helpText("Note: We model EMTRs in $1000 increments from $1,000 to $200,000 in the following manner (net income @ 72k - net income @ 71k)/1000.")
         
         

@@ -6,6 +6,10 @@ function(input, output, session){
   library(ggplot2)
   library(plotly)
   library(lubridate)
+  library(stringr)
+  
+  '%!in%' <- function(x,y)!('%in%'(x,y))
+  
   
 # issues with mls calcand hecs needs to be optional
   
@@ -92,6 +96,15 @@ function(input, output, session){
              , gross = income_taxable) %>%
       pivot_longer(!gross)
     
+    ################################################################################ EMTR #####
+    
+    emtr <- income %>% 
+      group_by(name) %>%
+      mutate(value = (1-(value-lag(value))/1000)*100
+             , value = ifelse(str_detect(name, "payable")==T, 100-value, value)
+               ) %>%
+      filter(name %!in% c("income_taxable"))
+
     ################################################################################ superannuation #####
     
     super_contributions_net <- sapply(income_taxable, super.total.contributions
@@ -162,6 +175,16 @@ function(input, output, session){
         theme_minimal() +
         xlab("Gross Income") +
         ylab("Net Income") +
+        xlim(income_min, income_max)
+    )})
+    
+    output$emtr_plot <- renderPlotly({ggplotly(
+      emtr %>% 
+        ggplot(aes(x=gross, y=value, colour = name)) +
+        geom_line() +
+        theme_minimal() +
+        xlab("Gross Income") +
+        ylab("Net Superannuation Contributions") +
         xlim(income_min, income_max)
     )})
   
