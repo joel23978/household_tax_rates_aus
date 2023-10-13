@@ -44,8 +44,8 @@ navbarPage(
         , h2("Superannuation")
         , numericInput("super_rate_employer"
                        , label = ("Employer Superannuation Rate (%)")
-                       , value = 11)
-        , helpText("Minimum = 11")
+                       , value = 10.5)
+        , helpText("Minimum = 10.5")
         , numericInput("super_cont_vol"
                        , label = ("Voluntary Super Contributions (Annual)")
                        , value = 0)
@@ -82,7 +82,7 @@ navbarPage(
         
         ## super contributions
         , h2("Superannuation Contributions")
-        #, plotlyOutput("super_plot")
+        , plotlyOutput("super_plot")
         
       )
       

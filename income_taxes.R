@@ -26,7 +26,10 @@ library(lubridate)
 tax_threshold_data <- read_excel(here("taxes.xlsx")
                                         , sheet = "income_tax"
                                         , skip = 0) %>%
-  select(c(1:6))
+  select(c(1:6)) %>%
+  mutate(residency_dummy = 0
+         , residency_dummy = ifelse(residency=="foreign_resident", 1, residency_dummy)
+         , residency_dummy = ifelse(residency=="working_holiday", 2, residency_dummy))
 
 
 
@@ -78,8 +81,7 @@ marginal.rate <- function(income_gross
 hecs_threshold_data <- read_excel(here("taxes.xlsx")
                                  , sheet = "hecs"
                                  , skip = 0) %>%
-  select(c(1:3))
-
+  select(c(1:3)) 
 
 hecs.repayment <- function(income_hecs_mls
                            , hecs_threshold_data

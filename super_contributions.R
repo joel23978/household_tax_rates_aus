@@ -19,18 +19,18 @@ source("income_taxes.R") ## needs marginal tax rate function
 # super_balance <- 600000
 # 
 # yr <- year(Sys.Date())
-# resident_status <- "resident"
+# resident_status <- 0
 
 
 ################################################################################ variables ####
-# income_gross #from shiny app
+# income_gross  #from shiny app
 # super_rate_data #loads from excel in-file
 # 
-# super_rate_employer #shiny, optional, assumes equal to current sg
+# super_rate_employer =  #shiny, optional, assumes equal to current sg
 # super_cont_vol #shiny, optional, assumes = 0
 # super_cont_last5 #shiny, optional, assumes: income_gross*super_rate_employer*5*0.8
 # super_balance #shiny, optional, imputes median balance
-# tax_marginal_rate 
+# tax_marginal_rate
 # yr #shiny, optional, assumed current year
 
 
@@ -44,7 +44,7 @@ super_rate_data <- read_excel(here("taxes.xlsx")
   na.omit()
 
 
-super_total_contributions <- function(income_gross ##compulsory
+super.total.contributions <- function(income_gross ##compulsory
                                       , super_rate_data ## dataframe
                                       , tax_threshold_data # to calculate marginal tax rate
                                       , yr = year(Sys.Date())
@@ -52,12 +52,12 @@ super_total_contributions <- function(income_gross ##compulsory
                                       , super_cont_vol = NULL
                                       , super_cont_last5 = NULL
                                       , super_balance = NULL
-                                      , resident_status = "resident"
+                                      , resident_status = 0 ## = resident
                                       ) {
   ## find marginal tax rate
   tax_marginal_rate <<- tax_threshold_data %>%
     filter(year == yr
-           , residency == resident_status
+           , residency_dummy == resident_status
            , threshold < income_gross) %>%
     pull(rate) %>%
     max()
@@ -65,6 +65,9 @@ super_total_contributions <- function(income_gross ##compulsory
   ### filter super rate data
   tmp <- super_rate_data %>%
     filter(year == yr) 
+  
+  ## divide by 100
+  super_rate_employer <- super_rate_employer/100
 
   ##### pass remaining optional arguments
   if (is.null(super_rate_employer)) {super_rate_employer <- tmp$super_guarantee}
@@ -140,7 +143,7 @@ super_total_contributions <- function(income_gross ##compulsory
 
 }
 
-#super_total_contributions(income_gross, super_rate_data, tax_marginal_rate)
+#super.total.contributions(income_gross, super_rate_data, tax_marginal_rate)
 
 
 

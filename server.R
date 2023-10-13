@@ -20,17 +20,16 @@ function(input, output, session){
   x_income_personal_fortnightly <- income_taxable/365.25*14
   no_steps <- length(income_taxable)
   
-  net_investment_loss <- 0
-  rep_fringe_benefits <- 0 
-  rep_super_contributions <- 0
+#  rep_super_contributions <- 0
   
   yr <- year(Sys.Date())
-  resdent_status <- "resident"
+ # resdent_status <- "resident"
   
   
   observe({
     source("youth_allowance.R")
     source("income_taxes.R")
+    source("super_contributions.R")
     
     
     
@@ -68,12 +67,16 @@ function(input, output, session){
     
     net_investment_loss <- reactive(as.numeric(input$net_investment_loss))
     rep_fringe_benefits <- reactive(as.numeric(input$rep_fringe_benefits))
+    super_rate_employer <- reactive(as.numeric(input$super_rate_employer))
     super_cont_vol <- reactive(as.numeric(input$super_cont_vol))
+    super_cont_last5 <- reactive(as.numeric(input$super_cont_last5))
+    super_balance <- reactive(as.numeric(input$super_balance))
+    
+    resident_status <- reactive(as.numeric(input$resident_status))
     
 
     
-  
-    
+
     
     
     ################################################################################ income tax #####
@@ -84,14 +87,22 @@ function(input, output, session){
     mls_payable <- sapply(income_taxable, medicare.levy.surcharge
                           , mls_threshold_data, yr, x_single(), private_health(), x_income_partner_annual())
 
-    df <- data.frame(income_taxable, income_tax_payable, hecs_payable, mls_payable) %>%
+    income <- data.frame(income_taxable, income_tax_payable, hecs_payable, mls_payable) %>%
       mutate(income_net = income_taxable - income_tax_payable - hecs_payable - mls_payable
              , gross = income_taxable) %>%
       pivot_longer(!gross)
     
+    ################################################################################ superannuation #####
     
-    
-    
+    super_contributions_net <- sapply(income_taxable, super.total.contributions
+           , super_rate_data, tax_threshold_data, yr
+           , super_rate_employer(), super_cont_vol(), super_cont_last5(), super_balance(), resident_status())
+           
+           
+    super <- data.frame(income_taxable, income_tax_payable, super_contributions_net) %>%
+      mutate(gross = income_taxable) %>%
+      select(-c(income_taxable)) %>%
+      pivot_longer(!gross)
     
     
     
@@ -142,8 +153,10 @@ function(input, output, session){
     
    
     ################################################################################## PRETTY PLOTS ####################
-    output$income_plot <- renderPlotly({ggplotly(
-      df %>% 
+    
+    
+     output$income_plot <- renderPlotly({ggplotly(
+       income %>% 
         ggplot(aes(x=gross, y=value, colour = name)) +
         geom_line() +
         theme_minimal() +
@@ -151,7 +164,17 @@ function(input, output, session){
         ylab("Net Income") +
         xlim(income_min, income_max)
     )})
+  
     
+    output$super_plot <- renderPlotly({ggplotly(
+      super %>% 
+        ggplot(aes(x=gross, y=value, colour = name)) +
+        geom_line() +
+        theme_minimal() +
+        xlab("Gross Income") +
+        ylab("Net Superannuation Contributions") +
+        xlim(income_min, income_max)
+    )})
     
     
 
