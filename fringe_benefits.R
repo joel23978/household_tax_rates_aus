@@ -24,7 +24,11 @@ for (i in 1:nrow(fbt_threshold_data)) {
 }
 
 
-fringe_benefits_tax <- function(rep.fringe.benefits.gst, rep.fringe.benefits.nogst, fbt_threshold_data, exempt, yr) {
+fringe.benefits.tax <- function(rep_fringe_benefits_gst
+                                , rep_fringe_benefits_nogst
+                                , fbt_threshold_data
+                                , exempt
+                                , yr) {
   
   # Calculate FBT payable for each row in the data frame
   tmp <- fbt_threshold_data %>%
@@ -44,15 +48,15 @@ fringe_benefits_tax <- function(rep.fringe.benefits.gst, rep.fringe.benefits.nog
   type1_rate <- tmp %>% filter(type == "type_1") %>% pull(rate)
   type1_gross <- tmp %>% filter(type == "type_1") %>% pull(gross_up_rate)
   
-  rep.fringe.benefits <- rep.fringe.benefits.gst + rep.fringe.benefits.nogst
+  rep_fringe_benefits <- rep_fringe_benefits_gst + rep_fringe_benefits_nogst
   fbt_payable <- 0
   
   ### calc type 2
-  if (rep.fringe.benefits > threshold) {
+  if (rep_fringe_benefits > threshold) {
     fbt_payable <- max(0
                        , fbt_payable + 
-      rep.fringe.benefits.gst*type1_rate*type1_gross +
-      rep.fringe.benefits.nogst*type2_rate*type2_gross -
+      rep_fringe_benefits_gst*type1_rate*type1_gross +
+      rep_fringe_benefits_nogst*type2_rate*type2_gross -
       exemption
     )
   }
@@ -61,7 +65,7 @@ fringe_benefits_tax <- function(rep.fringe.benefits.gst, rep.fringe.benefits.nog
 }
 
 
-#fringe_benefits_tax(rep.fringe.benefits.gst,rep.fringe.benefits.nogst, fbt_threshold_data, exempt, yr)
+#fringe_benefits_tax(rep_fringe_benefits_gst,rep_fringe_benefits_nogst, fbt_threshold_data, exempt, yr)
 
 
 

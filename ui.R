@@ -5,7 +5,7 @@ navbarPage(
     "Taxes",
     fluidPage(
       sidebarPanel(
-        h2("Variables")
+        h3("Variables")
         , checkboxInput("hecs_debt"
                         , label = ("HECS-HELP Debt")
                         , FALSE
@@ -41,7 +41,7 @@ navbarPage(
         , helpText("Note: Residency status determines income tax rates")
         
         
-        , h2("Superannuation")
+        , h3("Superannuation")
         , numericInput("super_rate_employer"
                        , label = ("Employer Superannuation Rate (%)")
                        , value = 10.5)
@@ -64,7 +64,18 @@ navbarPage(
                        , label = ("Reportable Fringe Benefits (Annual)")
                        , value = 0)
         , helpText("Note: Income for the purposes of HECS-HELP repayments and the medicare levy surchare include reportable super contributions and reportable superannuation contributions.")
-      )
+      
+        , h3("App Settings")
+        , numericInput("income_step"
+                       , label = ("Income Step for Calcs")
+                       , value = 1000)
+        , numericInput("income_max"
+                       , label = ("Max Income Modelled")
+                       , value = 200000)
+        # , numericInput("yr"
+        #                , label = ("Tax Year")
+        #                , value = 2023)
+        )
       
       
       , mainPanel(

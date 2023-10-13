@@ -23,8 +23,13 @@ youth_allowance_rate_data <- read_excel(here("transfers.xlsx")
 
 
 #### Base rate ####
-youth_allowance_rate_fn <- function(youth_allowance_rate_data
-                                    , x_age, x_dependent, x_single, x_children, x_away_from_home) {
+youth.allowance.rate.fn <- function(youth_allowance_rate_data
+                                    , x_age
+                                    , x_dependent
+                                    , x_single
+                                    , x_children
+                                    , x_away_from_home
+                                    ) {
   x_under_eighteen <- ifelse(x_age() < 18, 1, 0)
   
   base_rate <- youth_allowance_rate_data %>%
@@ -59,7 +64,9 @@ youth_allowance_personal_income_test_data <- read_excel(here("transfers.xlsx")
   mutate_if(is.character, as.numeric) 
 
 
-youth_allowance_personal_income_test_fn <- function(youth_allowance_personal_income_test_data, x_income_personal_fortnightly){
+youth.allowance.personal.income.test.fn <- function(youth_allowance_personal_income_test_data
+                                                    , x_income_personal_fortnightly
+                                                    ){
   
   reduction_personal_income <-
     max(0, (x_income_personal_fortnightly-youth_allowance_personal_income_test_data$income_personal_fortnightly[3])*youth_allowance_personal_income_test_data$reduction_rate[3]) +
@@ -88,8 +95,10 @@ youth_allowance_parental_income_test_data <- read_excel(here("transfers.xlsx")
   mutate_all(as.numeric) %>%
   replace(is.na(.), 2)
 
-youth_allowance_parental_income_test_fn <- function(youth_allowance_parental_income_test_data
-                                                    , x_dependent, x_income_parental_annual){
+youth.allowance.parental.income.test.fn <- function(youth_allowance_parental_income_test_data
+                                                    , x_dependent
+                                                    , x_income_parental_annual
+                                                    ){
   if (x_dependent() ==1){
     reduction_parental_income <- 
       max(0, (x_income_parental_annual() - youth_allowance_parental_income_test_data$income_parental_annual[2])*youth_allowance_parental_income_test_data$reduction_rate[2]/365.25*14)
@@ -115,8 +124,10 @@ youth_allowance_partner_income_test_data <- read_excel(here("transfers.xlsx")
   mutate_all(as.numeric) %>%
   replace(is.na(.), 2)
 
-youth_allowance_partner_income_test_fn <- function(youth_allowance_partner_income_test_data
-                                                   , x_single, x_income_partner_fortnightly){
+youth.allowance.partner.income.test.fn <- function(youth_allowance_partner_income_test_data
+                                                   , x_single
+                                                   , x_income_partner_fortnightly
+                                                   ){
   if (x_single() ==0){
     reduction_partner_income <- 
       max(0, (x_income_partner_fortnightly() - youth_allowance_partner_income_test_data$income_partner_fortnightly[2])*youth_allowance_partner_income_test_data$reduction_rate[2])
@@ -145,13 +156,16 @@ youth_allowance_asset_test_data <- read_excel(here("transfers.xlsx")
   replace(is.na(.), 2)
 
 
-youth_allowance_asset_test_fn <- function(youth_allowance_asset_test_data
-                                          , x.single, x.homeowner, x.personal.assets){
+youth.allowance.asset.test.fn <- function(youth_allowance_asset_test_data
+                                          , x_single
+                                          , x_homeowner
+                                          , x_personal_assets
+                                          ){
   
-  if (x.personal.assets() >
+  if (x_personal_assets() >
       youth_allowance_asset_test_data %>%
-    filter(single != 1-x.single() 
-         , homeowner !=  1-x.homeowner()) %>%
+    filter(single != 1-x_single() 
+         , homeowner !=  1-x_homeowner()) %>%
     pull(asset_cap)){
     terminal <<- 1
   } else {
@@ -178,8 +192,9 @@ youth_allowance_scholarship_exemption_data <- read_excel(here("transfers.xlsx")
   mutate_all(as.numeric) %>%
   replace(is.na(.), 2)
 
-youth_allowance_scholarship_exemption_fn <- function(youth_allowance_scholarship_exemption_data
-                                                     , x_income_scholarship_annual){
+youth.allowance.scholarship.exemption.fn <- function(youth_allowance_scholarship_exemption_data
+                                                     , x_income_scholarship_annual
+                                                     ){
 
   reduction_scholarship_income <- 
       max(0, (x_income_scholarship_annual() - youth_allowance_scholarship_exemption_data$scholarship_exemption_annual[1])/365.25*14)
@@ -205,8 +220,11 @@ youth_allowance_deeming_rates_data <- read_excel(here("transfers.xlsx")
   replace(is.na(.), 2)
 
 
-youth_allowance_deeming_rates_fn <- function(youth_allowance_deeming_rates_data
-                                             , x_single, x_pension, x_assets_personal){
+youth.allowance.deeming.rates.fn <- function(youth_allowance_deeming_rates_data
+                                             , x_single
+                                             , x_pension
+                                             , x_assets_personal
+                                             ){
    
     tmp <- youth_allowance_deeming_rates_data %>%
       filter(
@@ -230,7 +248,7 @@ youth_allowance_deeming_rates_fn <- function(youth_allowance_deeming_rates_data
 
 
 ##### COMPLETE FN ####
-youth_allowance <- function(
+youth.allowance <- function(
     x_income_personal_fortnightly,
     
     youth_allowance_rate_data, 
@@ -264,32 +282,57 @@ youth_allowance <- function(
                                    (x_ft_study() == 1 & x_completed_y12() == 1)))) {
     
     # Base rate
-    base_rate <- youth_allowance_rate_fn(youth_allowance_rate_data
-                            , x_age, x_dependent, x_single, x_children, x_away_from_home)
+    base_rate <- youth.allowance.rate.fn(
+      youth_allowance_rate_data
+      , x_age
+      , x_dependent
+      , x_single
+      , x_children
+      , x_away_from_home)
+    
     # Personal income test
-    reduction_personal_income <- youth_allowance_personal_income_test_fn(youth_allowance_personal_income_test_data
-                                            , x_income_personal_fortnightly)
+    reduction_personal_income <- youth.allowance.personal.income.test.fn(
+      youth_allowance_personal_income_test_data
+      , x_income_personal_fortnightly
+    )
+    
     # Scholarship
-    reduction_scholarship_income <- youth_allowance_scholarship_exemption_fn(youth_allowance_scholarship_exemption_data
-                                              , x_income_scholarship_annual)
+    reduction_scholarship_income <- youth.allowance.scholarship.exemption.fn(
+      youth_allowance_scholarship_exemption_data
+      , x_income_scholarship_annual)
+    
     # Deeming rates
-    deeming_reduction <- youth_allowance_deeming_rates_fn(youth_allowance_deeming_rates_data
-                                     , x_single, x_pension, x_assets_personal)
+    deeming_reduction <- youth.allowance.deeming.rates.fn(
+      youth_allowance_deeming_rates_data
+      , x_single
+      , x_pension
+      , x_assets_personal)
 
     # Parental means test
-    reduction_parental_income <- youth_allowance_parental_income_test_fn(youth_allowance_parental_income_test_data
-                                              , x_dependent, x_income_parental_annual)
+    reduction_parental_income <- youth.allowance.parental.income.test.fn(
+      youth_allowance_parental_income_test_data
+      , x_dependent
+      , x_income_parental_annual)
+    
     # Partner income test
-    reduction_partner_income <- youth_allowance_partner_income_test_fn(youth_allowance_partner_income_test_data
-                                             , x_single, x_income_partner_fortnightly)
+    reduction_partner_income <- youth.allowance.partner.income.test.fn(
+      youth_allowance_partner_income_test_data
+      , x_single
+      , x_income_partner_fortnightly)
     
     youth_allowance_payment <- max(0
-                                    , (base_rate - reduction_personal_income - reduction_scholarship_income - deeming_reduction - 
-                                      reduction_parental_income - reduction_partner_income)/ 14 * 365.25)
+                                   , (base_rate - 
+                                        reduction_personal_income - 
+                                        reduction_scholarship_income - 
+                                        deeming_reduction - 
+                                        reduction_parental_income - 
+                                        reduction_partner_income
+                                      )/ 14 * 365.25)
 
-    print(youth_allowance_payment)
+    return(youth_allowance_payment)
   }
 }
+
 
 EMTR_youth_allowance <- function(youth_allowance_payment){
   dat <- (youth_allowance_payment-lag(youth_allowance_payment))/custom_step

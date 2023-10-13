@@ -14,21 +14,18 @@ function(input, output, session){
 # issues with mls calcand hecs needs to be optional
   
   
-  ################################################################################ DEFINED ELEMENTS ##########
-
-  income_max <- 200000
-  custom_step <- 1000  # You can adjust this to your desired step size
-  income_min <- custom_step
-  
-  income_taxable <- seq(income_min, income_max, by = custom_step)
-  x_income_personal_fortnightly <- income_taxable/365.25*14
-  no_steps <- length(income_taxable)
-  
-#  rep_super_contributions <- 0
-  
+  # ################################################################################ DEFINED ELEMENTS ##########
+  # 
+  # income_max <- 200000
+  # custom_step <- 1000  # You can adjust this to your desired step size
+  # income_min <- custom_step
+  # 
+  # income_taxable <- seq(income_min, income_max, by = custom_step)
+  # x_income_personal_fortnightly <- income_taxable/365.25*14
+  # no_steps <- length(income_taxable)
+  # 
   yr <- year(Sys.Date())
- # resdent_status <- "resident"
-  
+
   
   observe({
     source("youth_allowance.R")
@@ -42,6 +39,16 @@ function(input, output, session){
     
     
     ################################################################################## REACTIVE ELEMENTS ####################
+    ### Dashboard defaults
+    income_max <- reactive(as.numeric(input$income_max))
+    income_step <- reactive(as.numeric(input$income_step))
+
+    income_min <- income_step()
+    income_taxable <- as.vector(seq(income_step(), income_max(), by = income_step()))
+    x_income_personal_fortnightly <- income_taxable/365.25*14
+    no_steps <- length(income_taxable)
+
+    
     # Create a reactive object to check the presence of variables in input$variables
     variable_check <- reactive({
       var_list <- c("x_dependent", "x_ft_study", "x_completed_y12", "x_apprenticeship", 
@@ -77,9 +84,7 @@ function(input, output, session){
     super_balance <- reactive(as.numeric(input$super_balance))
     
     resident_status <- reactive(as.numeric(input$resident_status))
-    
 
-    
 
     
     
@@ -100,7 +105,7 @@ function(input, output, session){
     
     emtr <- income %>% 
       group_by(name) %>%
-      mutate(value = (1-(value-lag(value))/1000)*100
+      mutate(value = (1-(value-lag(value))/income_step())*100
              , value = ifelse(str_detect(name, "payable")==T, 100-value, value)
                ) %>%
       filter(name %!in% c("income_taxable"))
@@ -175,7 +180,7 @@ function(input, output, session){
         theme_minimal() +
         xlab("Gross Income") +
         ylab("Net Income") +
-        xlim(income_min, income_max)
+        xlim(income_min, income_max())
     )})
     
     output$emtr_plot <- renderPlotly({ggplotly(
@@ -184,8 +189,8 @@ function(input, output, session){
         geom_line() +
         theme_minimal() +
         xlab("Gross Income") +
-        ylab("Net Superannuation Contributions") +
-        xlim(income_min, income_max)
+        ylab("Marginal Tax Rate (%)") +
+        xlim(income_min, income_max())
     )})
   
     
@@ -196,7 +201,7 @@ function(input, output, session){
         theme_minimal() +
         xlab("Gross Income") +
         ylab("Net Superannuation Contributions") +
-        xlim(income_min, income_max)
+        xlim(income_min, income_max())
     )})
     
     
