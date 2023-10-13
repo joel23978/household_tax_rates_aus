@@ -15,15 +15,31 @@ navbarPage(
                         , FALSE
         )
         , helpText("Private health cover affects Medicare Levy Surcharge")
-        , selectInput("x_single"
-                      , label = "Relationship Status"
-                      , choices = list("Single" = 1
-                                       , "Couple" = 0
-                                       , "Separated temporarily" = 2
-                                       , "Separated due to illness" = 3)
-                      , selected = 1
+        , conditionalPanel(
+          condition = "input.private_health == false"
+          , selectInput("x_single"
+                        , label = "Relationship Status"
+                        , choices = list("Single" = 1
+                                         , "Couple" = 0
+                                         , "Separated temporarily" = 2
+                                         , "Separated due to illness" = 3)
+                        , selected = 1
+          )
+          , helpText("Note: Relationship status affects medicare levy surcharge and welfare payments")
         )
-        , helpText("Note: Relationship status affects medicare levy surcharge and welfare payments")
+        
+        
+        
+        # 
+        # , selectInput("x_single"
+        #               , label = "Relationship Status"
+        #               , choices = list("Single" = 1
+        #                                , "Couple" = 0
+        #                                , "Separated temporarily" = 2
+        #                                , "Separated due to illness" = 3)
+        #               , selected = 1
+        # )
+        # , helpText("Note: Relationship status affects medicare levy surcharge and welfare payments")
         , conditionalPanel(
           condition = "input.x_single == '0'"
           , numericInput("x_income_partner_annual"
