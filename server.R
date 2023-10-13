@@ -20,12 +20,12 @@ function(input, output, session){
   x_income_personal_fortnightly <- income_taxable/365.25*14
   no_steps <- length(income_taxable)
   
-  net.investment.loss <- 0
-  rep.fringe.benefits <- 0 
-  rep.super.contributions <- 0
+  net_investment_loss <- 0
+  rep_fringe_benefits <- 0 
+  rep_super_contributions <- 0
   
   yr <- year(Sys.Date())
-  resdent.status <- "resident"
+  resdent_status <- "resident"
   
   
   observe({
@@ -41,31 +41,33 @@ function(input, output, session){
     ################################################################################## REACTIVE ELEMENTS ####################
     # Create a reactive object to check the presence of variables in input$variables
     variable_check <- reactive({
-      var_list <- c("x.dependent", "x.ft.study", "x.completed.y12", "x.apprenticeship", 
-                    "x.children", "x.away.from.home", "x.homeowner", "x.pension")
+      var_list <- c("x_dependent", "x_ft_study", "x_completed_y12", "x_apprenticeship", 
+                    "x_children", "x_away_from_home", "x_homeowner", "x_pension")
       sapply(var_list, function(var) var %in% input$variables, USE.NAMES = FALSE)
     })
     
     # Use the variable_check object for calculations
-    x.dependent <- reactive({ as.numeric(variable_check()[1]) })
-    x.ft.study <- reactive({ as.numeric(variable_check()[2]) })
-    x.completed.y12 <- reactive({ as.numeric(variable_check()[3]) })
-    x.apprenticeship <- reactive({ as.numeric(variable_check()[4]) })
-    x.children <- reactive({ as.numeric(variable_check()[5]) })
-    x.away.from.home <- reactive({ as.numeric(variable_check()[6]) })
+    x_dependent <- reactive({ as.numeric(variable_check()[1]) })
+    x_ft_study <- reactive({ as.numeric(variable_check()[2]) })
+    x_completed_y12 <- reactive({ as.numeric(variable_check()[3]) })
+    x_apprenticeship <- reactive({ as.numeric(variable_check()[4]) })
+    x_children <- reactive({ as.numeric(variable_check()[5]) })
+    x_away_from_home <- reactive({ as.numeric(variable_check()[6]) })
     x.homeowner <- reactive({ as.numeric(variable_check()[7]) })
     x.pension <- reactive({ as.numeric(variable_check()[8]) })
     
-    x.single <- reactive(as.numeric(input$x.single))
-    x.age <- reactive(as.numeric(input$x.age))
-    x.income.scholarship.annual <- reactive(as.numeric(input$x.income.scholarship.annual))
-    x_income.parental.annual <- reactive(as.numeric(input$x_income.parental.annual))
-    x.income.partner.fortnightly <- reactive(as.numeric(input$x.income.partner.fortnightly))
-    x.assets.personal <- reactive(as.numeric(input$x.assets.personal))
+    x_single <- reactive(as.numeric(input$x_single))
+    x_age <- reactive(as.numeric(input$x_age))
+    x_income_scholarship_annual <- reactive(as.numeric(input$x_income_scholarship_annual))
+    x_income_parental_annual <- reactive(as.numeric(input$x_income_parental_annual))
+    x_income_partner_fortnightly <- reactive(as.numeric(input$x_income_partner_fortnightly))
+    x_income_partner_annual <- reactive(as.numeric(input$x_income_partner_annual))
+    x_assets_personal <- reactive(as.numeric(input$x_assets_personal))
+    private_health <- reactive(as.numeric(as.logical(input$private_health)))
     
-    net.investment.loss <- reactive(as.numeric(input$net.investment.loss))
-    rep.fringe.benefits <- reactive(as.numeric(input$rep.fringe.benefits))
-    super.cont.vol <- reactive(as.numeric(input$super.cont.vol))
+    net_investment_loss <- reactive(as.numeric(input$net_investment_loss))
+    rep_fringe_benefits <- reactive(as.numeric(input$rep_fringe_benefits))
+    super_cont_vol <- reactive(as.numeric(input$super_cont_vol))
     
 
     
@@ -74,12 +76,13 @@ function(input, output, session){
     
     
     ################################################################################ income tax #####
-    income.hecs.mls <- reactive(income_taxable + net.investment.loss + rep.fringe.benefits + rep.super.contributions)
+    income_hecs_mls <- reactive(income_taxable + net_investment_loss + rep_fringe_benefits + rep_super_contributions)
   
-    income_tax_payable <- sapply(income_taxable, income_tax, tax_threshold_data, yr, resdent.status)
-    hecs_payable <- sapply(income_taxable, hecs_repayment, hecs_threshold_data, yr)
-    mls_payable <- sapply(income_taxable, medicare_levy_surcharge, mls_threshold_data, yr, x.single)
-    
+    income_tax_payable <- sapply(income_taxable, income.tax, tax_threshold_data, yr, resdent_status)
+    hecs_payable <- sapply(income_taxable, hecs.repayment, hecs_threshold_data, yr)
+    mls_payable <- sapply(income_taxable, medicare.levy.surcharge
+                          , mls_threshold_data, yr, x_single(), private_health(), x_income_partner_annual())
+
     df <- data.frame(income_taxable, income_tax_payable, hecs_payable, mls_payable) %>%
       mutate(income_net = income_taxable - income_tax_payable - hecs_payable - mls_payable
              , gross = income_taxable) %>%
@@ -97,8 +100,8 @@ function(input, output, session){
     # # Initialize youth_allowance_payment and emtr_youth_allowance
     # youth_allowance_payment <- reactiveVal(NULL)  # Initialize as NULL
     # 
-    # observeEvent(input$youth.allowance, {
-    #   if (input$youth.allowance) {
+    # observeEvent(input$youth_allowance, {
+    #   if (input$youth_allowance) {
     #     result <- sapply(x_income_personal_fortnightly,
     #                      youth_allowance,
     #                      youth_allowance_rate_data,
@@ -107,20 +110,20 @@ function(input, output, session){
     #                      youth_allowance_deeming_rates_data,
     #                      youth_allowance_parental_income_test_data,
     #                      youth_allowance_partner_income_test_data,
-    #                      x.income.partner.fortnightly,
-    #                      x.income.parental.annual,
-    #                      x.income.scholarship.annual,
-    #                      x.assets.personal,
-    #                      x.age,
-    #                      x.dependent,
-    #                      x.single,
-    #                      x.children,
-    #                      x.away.from.home,
-    #                      x.pension,
-    #                      x.homeowner,
-    #                      x.apprenticeship,
-    #                      x.completed.y12,
-    #                      x.ft.study
+    #                      x_income_partner_fortnightly,
+    #                      x_income_parental_annual,
+    #                      x_income_scholarship_annual,
+    #                      x_assets_personal,
+    #                      x_age,
+    #                      x_dependent,
+    #                      x_single,
+    #                      x_children,
+    #                      x_away_from_home,
+    #                      x_pension,
+    #                      x_homeowner,
+    #                      x_apprenticeship,
+    #                      x_completed_y12,
+    #                      x_ft_study
     #     )
     #   } else {
     #     result <- rep(0, times = no_steps)
